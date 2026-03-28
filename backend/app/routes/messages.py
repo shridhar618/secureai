@@ -7,10 +7,18 @@ from app.models.user import User
 messages_bp = Blueprint("messages", __name__)
 
 
+def _get_json_payload():
+    return request.get_json(silent=True) or {}
+
+
 @messages_bp.route("/messages/<int:other_id>", methods=["GET"])
 @jwt_required()
 def get_conversation(other_id):
     current_id = int(get_jwt_identity())
+    other_user = User.query.filter_by(id=other_id, is_active=True).first()
+    if not other_user:
+        return jsonify({"error": "User not found"}), 404
+
     msgs = (
         Message.query
         .filter(
@@ -33,12 +41,24 @@ def get_conversation(other_id):
 @jwt_required()
 def send_message():
     current_id = int(get_jwt_identity())
-    data = request.get_json()
+    data = _get_json_payload()
     receiver_id = data.get("receiver_id")
     content = data.get("content", "").strip()
 
     if not receiver_id or not content:
         return jsonify({"error": "receiver_id and content required"}), 400
+
+    try:
+        receiver_id = int(receiver_id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "receiver_id must be an integer"}), 400
+
+    if receiver_id == current_id:
+        return jsonify({"error": "Cannot send messages to yourself"}), 400
+
+    receiver = User.query.filter_by(id=receiver_id, is_active=True).first()
+    if not receiver:
+        return jsonify({"error": "Receiver not found"}), 404
 
     msg = Message(sender_id=current_id, receiver_id=receiver_id, content=content)
     db.session.add(msg)

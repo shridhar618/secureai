@@ -12,6 +12,19 @@ def _require_admin():
     return user if user and user.role == "admin" else None
 
 
+def _parse_positive_int(value, default, *, minimum=1, maximum=None):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+
+    if parsed < minimum:
+        return default
+    if maximum is not None and parsed > maximum:
+        return maximum
+    return parsed
+
+
 @logs_bp.route("/logs", methods=["GET"])
 @jwt_required()
 def get_logs():
@@ -22,8 +35,8 @@ def get_logs():
     # Query params
     filter_user = request.args.get("username")
     filter_status = request.args.get("status")
-    page = int(request.args.get("page", 1))
-    per_page = int(request.args.get("per_page", 50))
+    page = _parse_positive_int(request.args.get("page"), 1)
+    per_page = _parse_positive_int(request.args.get("per_page"), 50, maximum=100)
 
     query = AuditLog.query.order_by(AuditLog.timestamp.desc())
     if filter_user:

@@ -12,6 +12,10 @@ chat_bp = Blueprint("chat", __name__)
 _histories: dict[int, list[dict]] = {}
 
 
+def _get_json_payload():
+    return request.get_json(silent=True) or {}
+
+
 @chat_bp.route("/chat", methods=["POST"])
 @jwt_required()
 def chat():
@@ -20,7 +24,7 @@ def chat():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    data = request.get_json()
+    data = _get_json_payload()
     query = data.get("message", "").strip()
     if not query:
         return jsonify({"error": "Message is required"}), 400
@@ -31,7 +35,7 @@ def chat():
     _histories[user_id].append({"role": "user", "content": query})
 
     # Get AI response
-    raw_response = get_ai_response(_histories[user_id])
+    raw_response = get_ai_response(_histories[user_id]) or ""
 
     # Apply governance layer
     result = apply_governance(raw_response, query, user.role)

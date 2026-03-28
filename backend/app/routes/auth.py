@@ -7,9 +7,13 @@ from app.models.user import User
 auth_bp = Blueprint("auth", __name__)
 
 
+def _get_json_payload():
+    return request.get_json(silent=True) or {}
+
+
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
+    data = _get_json_payload()
     username = data.get("username", "").strip()
     email = data.get("email", "").strip()
     password = data.get("password", "")
@@ -42,7 +46,7 @@ def register():
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = _get_json_payload()
     username = data.get("username", "").strip()
     password = data.get("password", "")
 

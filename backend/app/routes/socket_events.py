@@ -1,5 +1,5 @@
 from flask import request
-from flask_socketio import emit, join_room, leave_room
+from flask_socketio import emit, join_room
 from flask_jwt_extended import decode_token
 from app import socketio, db
 from app.models.message import Message
@@ -13,8 +13,15 @@ def _get_user_from_token(token: str):
     try:
         decoded = decode_token(token)
         user_id = int(decoded["sub"])
-        return User.query.get(user_id)
+        return User.query.filter_by(id=user_id, is_active=True).first()
     except Exception:
+        return None
+
+
+def _parse_receiver_id(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
         return None
 
 
@@ -42,11 +49,15 @@ def handle_disconnect():
 @socketio.on("private_message")
 def handle_private_message(data):
     token = data.get("token", "")
-    receiver_id = data.get("receiver_id")
+    receiver_id = _parse_receiver_id(data.get("receiver_id"))
     content = data.get("content", "").strip()
 
     sender = _get_user_from_token(token)
-    if not sender or not receiver_id or not content:
+    if not sender or not receiver_id or not content or receiver_id == sender.id:
+        return
+
+    receiver = User.query.filter_by(id=receiver_id, is_active=True).first()
+    if not receiver:
         return
 
     # Persist
@@ -65,7 +76,7 @@ def handle_private_message(data):
 @socketio.on("typing")
 def handle_typing(data):
     token = data.get("token", "")
-    receiver_id = data.get("receiver_id")
+    receiver_id = _parse_receiver_id(data.get("receiver_id"))
     sender = _get_user_from_token(token)
     if sender and receiver_id:
         emit("user_typing", {"user_id": sender.id, "username": sender.username},
@@ -75,7 +86,7 @@ def handle_typing(data):
 @socketio.on("stop_typing")
 def handle_stop_typing(data):
     token = data.get("token", "")
-    receiver_id = data.get("receiver_id")
+    receiver_id = _parse_receiver_id(data.get("receiver_id"))
     sender = _get_user_from_token(token)
     if sender and receiver_id:
         emit("user_stop_typing", {"user_id": sender.id}, to=f"user_{receiver_id}")
