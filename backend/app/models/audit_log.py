@@ -9,7 +9,7 @@ class AuditLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     username = db.Column(db.String(80), nullable=False)
     role = db.Column(db.String(20), nullable=False)
-    query = db.Column(db.Text, nullable=False)
+    user_query = db.Column("query", db.Text, nullable=False)
     ai_response = db.Column(db.Text, nullable=True)
     filtered_response = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(20), nullable=False)  # allowed / blocked / filtered
@@ -22,7 +22,7 @@ class AuditLog(db.Model):
             "user_id": self.user_id,
             "username": self.username,
             "role": self.role,
-            "query": self.query,
+            "query": self.user_query,
             "ai_response": self.ai_response,
             "filtered_response": self.filtered_response,
             "status": self.status,

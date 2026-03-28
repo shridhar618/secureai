@@ -52,7 +52,7 @@ def chat():
         user_id=user.id,
         username=user.username,
         role=user.role,
-        query=query,
+        user_query=query,
         ai_response=raw_response,
         filtered_response=result.filtered_response,
         status=result.status,
