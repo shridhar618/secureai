@@ -27,3 +27,7 @@ backend/.pytest_cache/
 # Editor files
 .vscode/
 .idea/
+
+# Local SQLite database (Flask instance folder)
+backend/instance/
+*.db
