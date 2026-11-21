@@ -1,5 +1,7 @@
 # SecureAI (Prototype)
 
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![Flask](https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=white) ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?logo=socketdotio&logoColor=white)
+
 A prototype of a role-aware enterprise AI assistant. The same question gets a different answer depending on the user's role, every interaction is logged for audit, and users can also message each other in real time.
 
 ## Features
@@ -34,6 +36,17 @@ npm run dev
 ```
 
 Create a `.env` file in `backend/` with `AI_PROVIDER` (`openai` or `gemini`) and the matching `OPENAI_API_KEY` or `GEMINI_API_KEY`.
+
+## Environment variables
+
+Set these in `backend/.env`. Replace the development placeholders outside local use.
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `AI_PROVIDER` | `openai` or `gemini` | `gemini` |
+| `OPENAI_API_KEY / GEMINI_API_KEY` | Key for the chosen provider | - |
+| `SECRET_KEY` | Flask secret key | dev placeholder |
+| `JWT_SECRET_KEY` | JWT signing secret | dev placeholder |
 
 ## Project structure
 
